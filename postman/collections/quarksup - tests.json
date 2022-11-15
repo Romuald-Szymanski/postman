@@ -1,0 +1,436 @@
+{
+	"info": {
+		"_postman_id": "829e4a0e-5ab5-4650-934a-0b8a9cd512e2",
+		"name": "quarksup - tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "56309-829e4a0e-5ab5-4650-934a-0b8a9cd512e2"
+	},
+	"item": [
+		{
+			"name": "authentication",
+			"item": [
+				{
+					"name": "Authentication - Step 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const querystring = require('querystring');\r",
+									"const $ = cheerio.load(pm.response.text());\r",
+									"\r",
+									"var formAction = $(\"form\").attr('action');\r",
+									"const clientRequestId = querystring.parse(formAction)[\"client-request-id\"];\r",
+									"pm.environment.set(\"clientRequestId\", clientRequestId);\r",
+									"\r",
+									"console.log(`code-challenge: ${pm.environment.get('codeChallenge')}`);\r",
+									"console.log(`client-request-id: ${pm.environment.get('clientRequestId')}`);\r",
+									"\r",
+									"postman.setNextRequest(\"Authentication - Step 2\");\r",
+									""
+								],
+								"type": "text/javascript",
+								"id": "4fdb2ff3-c0d5-4004-8400-3136b17b9dcb"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const cookies = pm.cookies.jar();\r",
+									"const host = pm.environment.get(\"host\");\r",
+									"cookies.clear(host, function(error){\r",
+									"    console.log(error);\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"id": "03cf0260-2fb2-4b4a-8335-ba56fb624835"
+							}
+						}
+					],
+					"id": "323d2a74-e7cc-4dfc-bbb6-d3cd9d192a82",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/adfs/oauth2/authorize?response_type=code&code_challenge_method=S256&client_id={{clientId}}&redirect_uri={{redirectUri}}&scope={{scope}}&code_challenge={{codeChallenge}}&RedirectToIdentityProvider=AD%20AUTHORITY",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"adfs",
+								"oauth2",
+								"authorize"
+							],
+							"query": [
+								{
+									"key": "response_type",
+									"value": "code"
+								},
+								{
+									"key": "code_challenge_method",
+									"value": "S256"
+								},
+								{
+									"key": "client_id",
+									"value": "{{clientId}}"
+								},
+								{
+									"key": "redirect_uri",
+									"value": "{{redirectUri}}"
+								},
+								{
+									"key": "scope",
+									"value": "{{scope}}"
+								},
+								{
+									"key": "code_challenge",
+									"value": "{{codeChallenge}}"
+								},
+								{
+									"key": "RedirectToIdentityProvider",
+									"value": "AD%20AUTHORITY"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authentication - Step 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const xml2js = require('xml2js');\r",
+									"const querystring = require('querystring');\r",
+									"\r",
+									"const $ = cheerio.load(pm.response.text());\r",
+									"\r",
+									"var wctx = $(\"input[name='wctx']\").attr('value');\r",
+									"var ruParam = querystring.parse(querystring.decode(wctx).ru);\r",
+									"var code = ruParam['/times/?code'];\r",
+									"\r",
+									"pm.environment.set('code', code);\r",
+									"console.log(code);\r",
+									"\r",
+									"postman.setNextRequest(\"Authentication - Step 3\");"
+								],
+								"type": "text/javascript",
+								"id": "72414784-2832-4d5f-a130-f0985ec6e0f6"
+							}
+						}
+					],
+					"id": "f1dc9778-2f0e-4d4f-a5de-fbc238f0106c",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "UserName={{login}}%40komeo&fakeUserName={{login}}&Password={{password}}&AuthMethod=FormsAuthentication"
+						},
+						"url": {
+							"raw": "{{host}}/adfs/oauth2/authorize?response_type=code&code_challenge_method=S256&client_id={{clientId}}&redirect_uri={{redirectUri}}&scope={{scope}}&code_challenge={{codeChallenge}}&client-request-id={{clientRequestId}}&RedirectToIdentityProvider=AD%20AUTHORITY",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"adfs",
+								"oauth2",
+								"authorize"
+							],
+							"query": [
+								{
+									"key": "response_type",
+									"value": "code"
+								},
+								{
+									"key": "code_challenge_method",
+									"value": "S256"
+								},
+								{
+									"key": "client_id",
+									"value": "{{clientId}}"
+								},
+								{
+									"key": "redirect_uri",
+									"value": "{{redirectUri}}"
+								},
+								{
+									"key": "scope",
+									"value": "{{scope}}"
+								},
+								{
+									"key": "code_challenge",
+									"value": "{{codeChallenge}}"
+								},
+								{
+									"key": "client-request-id",
+									"value": "{{clientRequestId}}"
+								},
+								{
+									"key": "RedirectToIdentityProvider",
+									"value": "AD%20AUTHORITY"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authentication - Step 3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var token = pm.response.json().access_token;\r",
+									"pm.environment.set(\"accessToken\", token);\r",
+									"console.log(token);\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"access token is not empty\", function() {\r",
+									"    token !== null && token.trim() !== \"\";\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript",
+								"id": "6c2271b5-4983-491a-9fd8-c2f77979f943"
+							}
+						}
+					],
+					"id": "44a05ccc-e81a-4598-ab10-c0290ec0cbc2",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "grant_type=authorization_code&redirect_uri={{redirectUri}}&code_verifier={{codeVerifier}}&client_id={{clientId}}&code={{code}}"
+						},
+						"url": {
+							"raw": "{{tokenHost}}/adfs/oauth2/token",
+							"host": [
+								"{{tokenHost}}"
+							],
+							"path": [
+								"adfs",
+								"oauth2",
+								"token"
+							],
+							"query": [
+								{
+									"key": "grant_type",
+									"value": "authorization_code",
+									"disabled": true
+								},
+								{
+									"key": "client_id",
+									"value": "{{clientId}}",
+									"disabled": true
+								},
+								{
+									"key": "redirect_uri",
+									"value": "{{redirectUri}}",
+									"disabled": true
+								},
+								{
+									"key": "code_verifier",
+									"value": "{{codeVerifier}}",
+									"disabled": true
+								},
+								{
+									"key": "code",
+									"value": "IwHUAEzZTkegKyquX4LW1A.aJ8tMD_D2ghdEek2wQ8ywiKLiRk.bcfdhIj1uz0XL32rNC49VyLigf0Jd888xm7ZBXEuYwO0EIRks8hY2K6OxHMw-NfXMmE_i9rRwbD4CttCnozceAPtEwGpKmvVTNv380ooNvx5p0nrzm8Zq41tbq8jCinuek4LoKkaO-HFE3WPhYB4gjaq7x88D4-GqPEEZcLz0esSIn5a-y8HrkZDZ44etmqgq_3p87bE_OWQT9TaMwaXr2SbGonG9-VBoAI_xywLXJtonRPwowHdWVJ7j9YBRnU7_dNFfYvLs5UB-kmp73iaO30XRsijIjue9RI6YbjQtEyPTqDcr9koAslTwl_5shtkseplcCSJCaACgNdfIFxWJA",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "83194675-1021-42aa-a15d-62aed5a9bab6"
+		},
+		{
+			"name": "organization",
+			"item": [
+				{
+					"name": "Get Permission Resource List",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"id": "0489e8a6-7b54-42b7-9263-14a0a4df0d13"
+							}
+						}
+					],
+					"id": "8e259ae7-e8b5-4181-a843-dd9cf3f97dbe",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{photonHost}}/organization/{{photonVersion}}/permissions/resources",
+							"host": [
+								"{{photonHost}}"
+							],
+							"path": [
+								"organization",
+								"{{photonVersion}}",
+								"permissions",
+								"resources"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "a56ce7bd-59bd-4b55-a76b-d5d3c61b598f"
+		},
+		{
+			"name": "times",
+			"item": [
+				{
+					"name": "HolidayList",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b47714b9-880b-4f07-a357-702f6647b137",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"should have 4 public holidays\", function()\r",
+									"{\r",
+									"    const json = pm.response.json();\r",
+									"    pm.expect(json.public.length).to.eql(4);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"should have 3 zones in schoolTerm\", function()\r",
+									"{\r",
+									"    const json = pm.response.json();\r",
+									"    pm.expect(json.schoolTerm.length).to.eql(3);\r",
+									"});\r",
+									"\r",
+									"// test update"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "0d86e3f6-ce98-48a0-8d67-d14c1be2879a",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{photonHost}}/times/{{photonVersion}}/planners/holidays?countryCode=fr&beginDate=2022-01-01&endDate=2022-05-01",
+							"host": [
+								"{{photonHost}}"
+							],
+							"path": [
+								"times",
+								"{{photonVersion}}",
+								"planners",
+								"holidays"
+							],
+							"query": [
+								{
+									"key": "countryCode",
+									"value": "fr"
+								},
+								{
+									"key": "beginDate",
+									"value": "2022-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2022-05-01"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "b4f5347f-3a52-4b2f-b921-4e72cbac1640"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{accessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				],
+				"id": "d26bf493-c924-40ed-aead-6b44405b32f0"
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				],
+				"id": "2e93c328-7772-4cca-84c0-dac515461c6c"
+			}
+		}
+	]
+}
